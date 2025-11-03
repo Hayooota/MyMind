@@ -44,26 +44,20 @@ export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onC
           <Search className="w-5 h-5" />
         </button>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+        <div className="flex-1 flex flex-col items-center justify-center">
           {!isAdding && !isSearching ? (
             <h1 className="text-[#5A5550] opacity-60">My Mind</h1>
           ) : isAdding ? (
-            <>
-              <form onSubmit={handleSubmit} className="w-full max-w-md">
-                <input
-                  type="text"
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  placeholder="Task name..."
-                  className="w-full bg-transparent border-none outline-none text-center text-[#5A5550] placeholder:text-[#5A5550] placeholder:opacity-40"
-                  autoFocus
-                />
-              </form>
-              <ColorPalette
-                onSelectColor={setSelectedColor}
-                className="animate-in fade-in duration-200"
+            <form onSubmit={handleSubmit} className="w-full max-w-md">
+              <input
+                type="text"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+                placeholder="..."
+                className="w-full bg-transparent border-none outline-none text-center text-[#5A5550] placeholder:text-[#5A5550] placeholder:opacity-40"
+                autoFocus
               />
-            </>
+            </form>
           ) : (
             <form onSubmit={handleSearch} className="w-full max-w-md">
               <input
@@ -87,6 +81,13 @@ export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onC
           <Plus className="w-5 h-5" />
         </motion.button>
       </div>
+      
+      {/* Color palette below header */}
+      {isAdding && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-50">
+          <ColorPalette onSelectColor={setSelectedColor} />
+        </div>
+      )}
     </header>
   );
 }

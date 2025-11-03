@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { NotionColor } from "../types";
 import { notionColors } from "../utils/colors";
 
@@ -21,12 +22,19 @@ export function ColorPalette({ onSelectColor, className = "" }: ColorPaletteProp
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      {colors.map((color) => (
-        <button
+      {colors.map((color, index) => (
+        <motion.button
           key={color}
           onClick={() => onSelectColor(color)}
           className={`w-7 h-7 rounded-full border-2 ${notionColors[color].bg} ${notionColors[color].border} hover:scale-110 transition-transform`}
           aria-label={`Select ${color} color`}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            delay: index * 0.05,
+            duration: 0.3,
+            ease: "easeOut"
+          }}
         />
       ))}
     </div>
