@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, Edit2, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
@@ -13,6 +13,8 @@ interface TaskCardProps {
   onAddSubtask: (parentId: string, title: string, color: NotionColor) => void;
   onToggleCollapse: (id: string) => void;
   onMoveTask: (taskId: string, newParentId: string | null, newPosition: { x: number; y: number } | null) => void;
+  onEditTask?: (id: string, newTitle: string) => void;
+  onMoveToList?: (taskId: string) => void;
   isTopLevel?: boolean;
 }
 
@@ -23,10 +25,14 @@ export function TaskCard({
   onAddSubtask,
   onToggleCollapse,
   onMoveTask,
+  onEditTask,
+  onMoveToList,
   isTopLevel = false,
 }: TaskCardProps) {
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
   const [subtaskTitle, setSubtaskTitle] = React.useState("");
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editTitle, setEditTitle] = React.useState(task.title);
   const [lastClickTime, setLastClickTime] = React.useState(0);
 
   const maxLevel = 3;
@@ -79,6 +85,20 @@ export function TaskCard({
     }
   };
 
+  const handleEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editTitle.trim() && onEditTask) {
+      onEditTask(task.id, editTitle.trim());
+      setIsEditing(false);
+    }
+  };
+
+  const startEditing = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditTitle(task.title);
+  };
+
   const width = isTopLevel ? "w-80" : `w-${Math.max(60, 80 - level * 10)}`;
   const backgroundOpacity = level === 0 ? 100 : Math.max(40, 100 - level * 20);
 
@@ -95,6 +115,7 @@ export function TaskCard({
         transition: "opacity 0.1s ease",
       }}
       onClick={handleDoubleClick}
+      className="group"
     >
       <motion.div
         ref={drop}
@@ -120,21 +141,73 @@ export function TaskCard({
               {task.completed && <Check className="w-3 h-3" strokeWidth={3} />}
             </button>
 
-            <span className={`flex-1 ${colors.text} ${task.completed ? "line-through opacity-50" : ""}`}>
-              {task.title}
-            </span>
-
-            {canAddSubtask && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsAddingSubtask(!isAddingSubtask);
-                }}
-                className="opacity-30 hover:opacity-60 transition-opacity"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+            {isEditing ? (
+              <form onSubmit={handleEdit} className="flex-1 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className={`flex-1 px-2 py-1 bg-white/70 border ${colors.border} rounded outline-none`}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                  onBlur={() => {
+                    if (editTitle.trim()) {
+                      handleEdit({ preventDefault: () => {} } as React.FormEvent);
+                    } else {
+                      setIsEditing(false);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setIsEditing(false);
+                      setEditTitle(task.title);
+                    }
+                  }}
+                />
+              </form>
+            ) : (
+              <span className={`flex-1 ${colors.text} ${task.completed ? "line-through opacity-50" : ""}`}>
+                {task.title}
+              </span>
             )}
+
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onEditTask && !isEditing && (
+                <button
+                  onClick={startEditing}
+                  className="opacity-40 hover:opacity-60 transition-opacity"
+                  title="Edit task"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </button>
+              )}
+              
+              {isTopLevel && onMoveToList && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMoveToList(task.id);
+                  }}
+                  className="opacity-40 hover:opacity-60 transition-opacity"
+                  title="Move to another list"
+                >
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              )}
+
+              {canAddSubtask && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsAddingSubtask(!isAddingSubtask);
+                  }}
+                  className="opacity-40 hover:opacity-60 transition-opacity"
+                  title="Add subtask"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           {isAddingSubtask && (
@@ -162,6 +235,7 @@ export function TaskCard({
                   onAddSubtask={onAddSubtask}
                   onToggleCollapse={onToggleCollapse}
                   onMoveTask={onMoveTask}
+                  onEditTask={onEditTask}
                   isTopLevel={false}
                 />
               ))}
