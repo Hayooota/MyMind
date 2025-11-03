@@ -7,10 +7,10 @@
 
   ## Links and co.
 
-  Web App Link: https://my-mind.figma.site/
-  Figma Make: https://www.figma.com/design/nRl6SrrIRORrDZHCir9BKZ/My-Mind.
-  GitHub Repository: https://github.com/Hayooota/MyMind
-  Loom Video: https://www.loom.com/share/01341b9b0156400fbf8f8e7972d20a47
+    ###Web App Link: https://my-mind.figma.site/
+  ###Figma Make: https://www.figma.com/design/nRl6SrrIRORrDZHCir9BKZ/My-Mind.
+  ###GitHub Repository: https://github.com/Hayooota/MyMind
+  ###Loom Video: https://www.loom.com/share/4c12baa69bf846acb8541851b7287cc7
     
   ## Process Documentation
 
@@ -23,9 +23,9 @@
 
   After that, I took pen to paper and designed what I wanted the To-Do List app to be; from the designs I saw and from already-existing products, I noted that none of them work for me because they are overly complex and way too flash... none of them except Notion. I admire Notion's minimalist nature because it makes you focus on productivity, leaving the aesthetic to them. This is exactly what I wanted my app to emulate, and so I came up with this design:
 
-  ![alt text](img/img1.png)
+  ![alt text](img/img1.jpg)
   
-  ![alt text](img/img2.png)
+  ![alt text](img/img2.jpg)
   
   ![alt text](img/img3.png)
 
