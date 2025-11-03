@@ -189,8 +189,25 @@
 html {
   font-size: var(--font-size);
   font-family: 'Josefin Sans', sans-serif;
+  /* Smooth scrolling for better user experience */
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: 'Josefin Sans', sans-serif;
+  /* Prevent overscroll bounce on mobile */
+  overscroll-behavior: none;
+}
+
+/* Performance optimizations for smooth animations */
+* {
+  /* Enable hardware acceleration for transforms */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth cursor transitions */
+button, a, [role="button"] {
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }

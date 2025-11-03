@@ -630,10 +630,6 @@
     transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
   }
 
-  .cursor-grab {
-    cursor: grab;
-  }
-
   .flex-col {
     flex-direction: column;
   }
@@ -1083,10 +1079,6 @@
     outline-style: none;
   }
 
-  .active\:cursor-grabbing:active {
-    cursor: grabbing;
-  }
-
   .disabled\:opacity-50:disabled {
     opacity: .5;
   }
@@ -1173,11 +1165,23 @@
 
 html {
   font-size: var(--font-size);
+  scroll-behavior: smooth;
   font-family: Josefin Sans, sans-serif;
 }
 
 body {
+  overscroll-behavior: none;
   font-family: Josefin Sans, sans-serif;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+}
+
+button, a, [role="button"] {
+  transition: opacity .2s, transform .2s;
 }
 
 @property --tw-translate-x {
