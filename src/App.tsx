@@ -3,6 +3,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Header } from "./components/Header";
 import { InfiniteCanvas } from "./components/InfiniteCanvas";
+import { CustomDragLayer } from "./components/CustomDragLayer";
 import { Task, NotionColor } from "./types";
 
 function App() {
@@ -155,6 +156,7 @@ function App() {
           onToggleCollapse={handleToggleCollapse}
           onMoveTask={handleMoveTask}
         />
+        <CustomDragLayer />
       </div>
     </DndProvider>
   );

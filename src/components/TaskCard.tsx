@@ -2,6 +2,7 @@ import React from "react";
 import { Check, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useDrag, useDrop } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 import { Task, NotionColor } from "../types";
 import { notionColors } from "../utils/colors";
 
@@ -34,18 +35,25 @@ export function TaskCard({
   const colors = notionColors[task.color];
 
   // Drag functionality
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "TASK",
-    item: { id: task.id, isTopLevel, parentId: task.parentId },
+    item: { id: task.id, task, isTopLevel, parentId: task.parentId },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
   }));
 
+  // Use empty image as drag preview to use custom drag layer
+  React.useEffect(() => {
+    if (isTopLevel) {
+      preview(getEmptyImage(), { captureDraggingState: true });
+    }
+  }, [preview, isTopLevel]);
+
   // Drop functionality for subtasks
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "TASK",
-    drop: (item: { id: string; isTopLevel: boolean; parentId?: string }) => {
+    drop: (item: { id: string; task: Task; isTopLevel: boolean; parentId?: string }) => {
       if (item.id !== task.id && canAddSubtask) {
         onMoveTask(item.id, task.id, null);
       }
@@ -83,8 +91,9 @@ export function TaskCard({
         }
       }}
       style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isTopLevel ? "move" : "default",
+        opacity: isDragging ? 0.3 : 1,
+        cursor: isTopLevel ? "grab" : "default",
+        transition: "opacity 0.1s ease",
       }}
       onClick={handleDoubleClick}
     >

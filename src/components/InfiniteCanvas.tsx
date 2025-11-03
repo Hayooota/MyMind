@@ -21,11 +21,12 @@ export function InfiniteCanvas({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  const [isDraggingTask, setIsDraggingTask] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const [, drop] = useDrop(() => ({
     accept: "TASK",
-    drop: (item: { id: string; isTopLevel: boolean }, monitor) => {
+    drop: (item: { id: string; task: Task; isTopLevel: boolean }, monitor) => {
       const offset = monitor.getClientOffset();
       if (offset && item.isTopLevel) {
         const canvasRect = canvasRef.current?.getBoundingClientRect();
@@ -35,18 +36,22 @@ export function InfiniteCanvas({
           onMoveTask(item.id, null, { x, y });
         }
       }
+      setIsDraggingTask(false);
+    },
+    hover: () => {
+      setIsDraggingTask(true);
     },
   }));
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === canvasRef.current || (e.target as HTMLElement).closest('.canvas-bg')) {
+    if (!isDraggingTask && (e.target === canvasRef.current || (e.target as HTMLElement).closest('.canvas-bg'))) {
       setIsPanning(true);
       setStartPan({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (isPanning) {
+    if (isPanning && !isDraggingTask) {
       setPan({
         x: e.clientX - startPan.x,
         y: e.clientY - startPan.y,
@@ -76,6 +81,7 @@ export function InfiniteCanvas({
           position: "absolute",
           top: 0,
           left: 0,
+          willChange: "transform",
         }}
       >
         {tasks.map((task) => (
