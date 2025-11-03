@@ -1,4 +1,4 @@
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, LogOut } from "lucide-react";
 import { motion } from "motion/react";
 import React from "react";
 import { NotionColor } from "../types";
@@ -11,9 +11,11 @@ interface HeaderProps {
   onToggleSearch: () => void;
   onCreateTask: (title: string, color: NotionColor) => void;
   onSearch: (query: string) => void;
+  userName?: string;
+  onLogout?: () => void;
 }
 
-export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onCreateTask, onSearch }: HeaderProps) {
+export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onCreateTask, onSearch, userName, onLogout }: HeaderProps) {
   const [taskTitle, setTaskTitle] = React.useState("");
   const [selectedColor, setSelectedColor] = React.useState<NotionColor>("blue");
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -37,12 +39,25 @@ export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onC
   return (
     <header className="fixed top-0 left-0 right-0 h-[10vh] bg-[#FAFAF9] border-b border-[#E8E6E3] z-50">
       <div className="h-full px-6 flex items-center justify-between">
-        <button
-          onClick={onToggleSearch}
-          className="text-[#5A5550] opacity-40 hover:opacity-60 transition-opacity"
-        >
-          <Search className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onToggleSearch}
+            className="text-[#5A5550] opacity-40 hover:opacity-60 transition-opacity"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          
+          {userName && onLogout && (
+            <button
+              onClick={onLogout}
+              className="text-[#5A5550] opacity-40 hover:opacity-60 transition-opacity flex items-center gap-2"
+              title={`Logged in as ${userName}`}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-xs">{userName}</span>
+            </button>
+          )}
+        </div>
 
         <div className="flex-1 flex flex-col items-center justify-center">
           {!isAdding && !isSearching ? (

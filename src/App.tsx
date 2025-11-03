@@ -1,17 +1,110 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Header } from "./components/Header";
 import { InfiniteCanvas, InfiniteCanvasRef } from "./components/InfiniteCanvas";
 import { CustomDragLayer } from "./components/CustomDragLayer";
 import { TrashZone } from "./components/TrashZone";
+import { Login } from "./components/Login";
 import { Task, NotionColor } from "./types";
+import { api } from "./utils/api";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
   const [isAdding, setIsAdding] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef<InfiniteCanvasRef>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('accessToken');
+    const savedUserId = localStorage.getItem('userId');
+    const savedUserName = localStorage.getItem('userName');
+
+    if (savedToken && savedUserId && savedUserName) {
+      setAccessToken(savedToken);
+      setUserId(savedUserId);
+      setUserName(savedUserName);
+      setIsAuthenticated(true);
+      loadTasks(savedToken);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load tasks from server
+  const loadTasks = async (token: string) => {
+    try {
+      setIsLoading(true);
+      const fetchedTasks = await api.getTasks(token);
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Save tasks to server (debounced)
+  const saveTasks = (tasksToSave: Task[]) => {
+    if (!accessToken) return;
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout to save after 1 second of no changes
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await api.saveTasks(accessToken, tasksToSave);
+        console.log('Tasks saved successfully');
+      } catch (error) {
+        console.error('Failed to save tasks:', error);
+      }
+    }, 1000);
+  };
+
+  // Save tasks whenever they change
+  useEffect(() => {
+    if (isAuthenticated && tasks.length >= 0) {
+      saveTasks(tasks);
+    }
+  }, [tasks, isAuthenticated]);
+
+  const handleLogin = (token: string, uid: string, name: string) => {
+    setAccessToken(token);
+    setUserId(uid);
+    setUserName(name);
+    setIsAuthenticated(true);
+    
+    // Save to localStorage
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('userId', uid);
+    localStorage.setItem('userName', name);
+    
+    // Load user's tasks
+    loadTasks(token);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAccessToken("");
+    setUserId("");
+    setUserName("");
+    setTasks([]);
+    
+    // Clear localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+  };
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -203,6 +296,20 @@ function App() {
     });
   };
 
+  // Show login if not authenticated
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen bg-[#FAF9F6] flex items-center justify-center">
+        <div className="text-[#3D3630] opacity-60">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="w-screen h-screen overflow-hidden">
@@ -213,6 +320,8 @@ function App() {
           onToggleSearch={handleToggleSearch}
           onCreateTask={handleCreateTask}
           onSearch={handleSearch}
+          userName={userName}
+          onLogout={handleLogout}
         />
         <InfiniteCanvas
           ref={canvasRef}
