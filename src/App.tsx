@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Header } from "./components/Header";
-import { InfiniteCanvas } from "./components/InfiniteCanvas";
+import { InfiniteCanvas, InfiniteCanvasRef } from "./components/InfiniteCanvas";
 import { CustomDragLayer } from "./components/CustomDragLayer";
 import { Task, NotionColor } from "./types";
 
 function App() {
   const [isAdding, setIsAdding] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const canvasRef = useRef<InfiniteCanvasRef>(null);
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -25,6 +27,58 @@ function App() {
     };
     setTasks([...tasks, newTask]);
     setIsAdding(false);
+  };
+
+  const findBestMatch = (tasks: Task[], query: string): string | null => {
+    let bestMatch: { id: string; score: number } | null = null;
+    const lowerQuery = query.toLowerCase();
+
+    const searchTask = (task: Task) => {
+      const title = task.title.toLowerCase();
+      
+      // Calculate match score (simple implementation)
+      let score = 0;
+      if (title === lowerQuery) {
+        score = 100; // exact match
+      } else if (title.startsWith(lowerQuery)) {
+        score = 80; // starts with query
+      } else if (title.includes(lowerQuery)) {
+        score = 60; // contains query
+      } else {
+        // Check if all words in query are in title
+        const queryWords = lowerQuery.split(" ");
+        const matchedWords = queryWords.filter(word => title.includes(word)).length;
+        score = (matchedWords / queryWords.length) * 40;
+      }
+
+      if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+        bestMatch = { id: task.id, score };
+      }
+
+      // Search subtasks recursively
+      task.subtasks.forEach(searchTask);
+    };
+
+    tasks.forEach(searchTask);
+    return bestMatch?.id || null;
+  };
+
+  const handleSearch = (query: string) => {
+    const taskId = findBestMatch(tasks, query);
+    if (taskId && canvasRef.current) {
+      canvasRef.current.centerOnTask(taskId);
+    }
+    setIsSearching(false);
+  };
+
+  const handleToggleSearch = () => {
+    setIsSearching(!isSearching);
+    if (isAdding) setIsAdding(false);
+  };
+
+  const handleToggleAdd = () => {
+    setIsAdding(!isAdding);
+    if (isSearching) setIsSearching(false);
   };
 
   const findAndUpdateTask = (
@@ -146,10 +200,14 @@ function App() {
       <div className="w-screen h-screen overflow-hidden">
         <Header
           isAdding={isAdding}
-          onToggleAdd={() => setIsAdding(!isAdding)}
+          isSearching={isSearching}
+          onToggleAdd={handleToggleAdd}
+          onToggleSearch={handleToggleSearch}
           onCreateTask={handleCreateTask}
+          onSearch={handleSearch}
         />
         <InfiniteCanvas
+          ref={canvasRef}
           tasks={tasks}
           onToggleComplete={handleToggleComplete}
           onAddSubtask={handleAddSubtask}
