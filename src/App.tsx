@@ -4,6 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Header } from "./components/Header";
 import { InfiniteCanvas, InfiniteCanvasRef } from "./components/InfiniteCanvas";
 import { CustomDragLayer } from "./components/CustomDragLayer";
+import { TrashZone } from "./components/TrashZone";
 import { Task, NotionColor } from "./types";
 
 function App() {
@@ -195,6 +196,13 @@ function App() {
     });
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    setTasks((prevTasks) => {
+      const { tasks: afterRemoval } = removeTaskFromTree(prevTasks, taskId);
+      return afterRemoval;
+    });
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="w-screen h-screen overflow-hidden">
@@ -215,6 +223,7 @@ function App() {
           onMoveTask={handleMoveTask}
         />
         <CustomDragLayer />
+        <TrashZone onDeleteTask={handleDeleteTask} />
       </div>
     </DndProvider>
   );
