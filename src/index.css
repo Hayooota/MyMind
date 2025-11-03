@@ -379,12 +379,20 @@
 }
 
 @layer utilities {
+  .pointer-events-none {
+    pointer-events: none;
+  }
+
   .absolute {
     position: absolute;
   }
 
   .fixed {
     position: fixed;
+  }
+
+  .relative {
+    position: relative;
   }
 
   .inset-0 {
@@ -405,6 +413,10 @@
 
   .left-0 {
     left: calc(var(--spacing) * 0);
+  }
+
+  .z-10 {
+    z-index: 10;
   }
 
   .z-50 {
@@ -651,6 +663,10 @@
 
   .bg-transparent {
     background-color: #0000;
+  }
+
+  .bg-white {
+    background-color: var(--color-white);
   }
 
   .bg-white\/50 {
