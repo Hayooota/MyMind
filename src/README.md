@@ -1,6 +1,6 @@
 # My Mind - Hierarchical Todo List Application
 
-A beautiful, minimalist web application for managing hierarchical todo lists with multi-user support.
+A beautiful, minimalist web application for managing hierarchical todo lists with an infinite canvas interface.
 
 ## Demo Video
 [Insert your Loom/screen recording link here - max 5 minutes]
@@ -10,13 +10,12 @@ A beautiful, minimalist web application for managing hierarchical todo lists wit
 ### Core Functionality
 - ✅ **Multiple Users**: Each user has their own account with secure authentication
 - ✅ **User Isolation**: Users can only see and modify their own tasks
-- ✅ **Multiple Lists**: Create and manage multiple todo lists
 - ✅ **Hierarchical Tasks**: Support for nested subtasks up to 3 levels deep
-- ✅ **Task Management**: Create, edit, delete, and complete tasks
+- ✅ **Task Management**: Create, edit, delete, and complete tasks at any level
 - ✅ **Collapse/Expand**: Hide or show subtasks by double-clicking on tasks
-- ✅ **Move Between Lists**: Move top-level tasks between different lists
-- ✅ **Search**: Find tasks across your lists with intelligent search
-- ✅ **Persistent Storage**: All data is saved to a secure database (Supabase)
+- ✅ **Drag & Drop**: Move tasks anywhere on the infinite canvas or nest them as subtasks
+- ✅ **Search**: Find tasks with intelligent search that centers on the best match
+- ✅ **Persistent Storage**: All data is automatically saved to a secure database (Supabase)
 
 ### User Interface
 - Clean, minimalist design with off-white background (#FAF9F6)
@@ -24,8 +23,8 @@ A beautiful, minimalist web application for managing hierarchical todo lists wit
 - Color-coded tasks using Notion's color palette
 - Infinite canvas for spatial organization of tasks
 - Smooth animations and transitions
-- Drag-and-drop task positioning
-- Trash zone for easy deletion
+- Personalized header showing "[Your Name]'s Mind"
+- Trash zone for easy deletion via drag and drop
 
 ## Project Structure
 
@@ -34,11 +33,9 @@ A beautiful, minimalist web application for managing hierarchical todo lists wit
 ├── components/
 │   ├── Login.tsx               # Authentication (login/signup)
 │   ├── Header.tsx              # Top navigation bar with search and create
-│   ├── ListsSidebar.tsx        # Sidebar for managing multiple lists
 │   ├── InfiniteCanvas.tsx      # Main canvas for displaying tasks
 │   ├── TaskCard.tsx            # Individual task component with subtasks
 │   ├── ColorPalette.tsx        # Color picker for tasks
-│   ├── MoveTaskDialog.tsx      # Dialog for moving tasks between lists
 │   ├── CustomDragLayer.tsx     # Custom drag preview layer
 │   └── TrashZone.tsx           # Trash zone for deleting tasks
 ├── types/
@@ -105,30 +102,29 @@ This is a React application that requires Node.js to run.
 1. **Sign Up**: Create an account with your email, password, and name
 2. **Log In**: Use your credentials to access your personal workspace
 
-### Managing Lists
-- **Create List**: Click the + icon in the Lists sidebar
-- **Switch Lists**: Click on any list name to view its tasks
-- **Rename List**: Click the edit icon next to a list name
-- **Delete List**: Click the trash icon (only if you have more than one list)
-
 ### Managing Tasks
-- **Create Task**: Click the + icon in the header, enter task name, select a color
-- **Edit Task**: Hover over a task and click the edit icon
-- **Complete Task**: Click the checkbox next to the task
-- **Delete Task**: Drag the task to the trash zone at the bottom
-- **Move Task**: Drag and drop tasks on the canvas to reposition them
+- **Create Task**: Click the + icon in the header, type task name, select a color from the palette below
+- **Edit Task**: Hover over a task and click the edit (pencil) icon, or click to rename
+- **Complete Task**: Click the checkbox next to any task
+- **Delete Task**: Drag the task to the trash zone at the bottom of the screen
+- **Move Task**: Click and drag any task to reposition it on the canvas
 
 ### Working with Subtasks
-- **Add Subtask**: Click the + icon within a task (up to 3 levels deep)
-- **Collapse/Expand**: Double-click on a task to hide/show its subtasks
+- **Add Subtask**: Click the + icon within any task (supports up to 3 levels deep)
+- **Edit Subtask**: Same as editing tasks - hover and click the edit icon
+- **Nest Tasks**: Drag and drop a task onto another task to make it a subtask
+- **Collapse/Expand**: Double-click on any task to hide/show its subtasks
 - **Nested Hierarchy**: Subtasks inherit their parent's color with progressively lighter shades
-
-### Moving Tasks Between Lists
-- **Move Task**: Click the arrow icon on a top-level task, select the target list
+- **Drag Subtasks**: All tasks at all levels can be dragged and repositioned or nested
 
 ### Searching
-- Click the search icon in the header, type your query, and press Enter
-- The canvas will center on the best matching task
+- Click the search icon (magnifying glass) in the header
+- Type your query and press Enter
+- The canvas will smoothly center on the best matching task
+
+### Navigation
+- **Pan Canvas**: Click and drag on the empty canvas background to pan around
+- **Logout**: Click the logout button next to your name in the header
 
 ## MVP Requirements Checklist
 
@@ -137,81 +133,89 @@ This is a React application that requires Node.js to run.
 - ✅ Users cannot modify other users' tasks
 - ✅ Mark tasks as complete (checkbox)
 - ✅ Collapse/expand tasks (double-click)
-- ✅ Move top-level tasks between lists (arrow button + dialog)
+- ✅ Move tasks between positions on canvas
 - ✅ Durable storage (Supabase PostgreSQL)
-- ✅ Create, edit, and delete tasks and lists
+- ✅ Create, edit, and delete tasks
 - ✅ Hierarchical structure up to 3 levels deep
+- ✅ Drag and drop for all task levels (top-level and subtasks)
 
 ## Code Architecture
 
 ### Frontend (App.tsx)
 The main application manages:
-- Authentication state and user session
-- Multiple todo lists with current list selection
-- All CRUD operations for lists and tasks
-- Auto-save functionality (debounced to 1 second)
-- Task search and navigation
+- Authentication state and user session persistence
+- Task state with auto-save functionality (1 second debounce)
+- All CRUD operations for tasks
+- Recursive task tree operations (search, update, delete)
+- Canvas positioning and task search
 
 ### Backend (supabase/functions/server/index.tsx)
 The Hono server provides:
-- `/signup` - Create new user accounts
-- `/login` - Authenticate users
-- `/lists` - GET/POST endpoints for loading and saving lists
+- `/signup` - Create new user accounts with auto-confirmed email
+- `/login` - Authenticate users and return access tokens
+- `/tasks` - GET/POST endpoints for loading and saving tasks
 - User verification middleware for protected routes
-- Error handling and logging
+- Comprehensive error handling and logging
 
 ### Data Model
 ```typescript
-interface TodoList {
-  id: string;
-  name: string;
-  tasks: Task[];
-}
-
 interface Task {
-  id: string;
-  title: string;
-  color: NotionColor;
-  x: number;
-  y: number;
-  completed: boolean;
-  collapsed: boolean;
-  subtasks: Task[];
-  parentId?: string;
+  id: string;           // Unique identifier
+  title: string;        // Task name
+  color: NotionColor;   // One of 9 Notion colors
+  x: number;           // Canvas X position (top-level only)
+  y: number;           // Canvas Y position (top-level only)
+  completed: boolean;  // Completion status
+  collapsed: boolean;  // Whether subtasks are hidden
+  subtasks: Task[];    // Nested tasks (recursive)
+  parentId?: string;   // ID of parent task (if subtask)
 }
 ```
 
 ### Database Schema
 - User authentication managed by Supabase Auth
-- Lists stored in KV store with key: `user_{userId}_lists`
+- Tasks stored in KV store with key: `user_{userId}_tasks`
 - Each user's data is completely isolated
+- Auto-save triggered 1 second after any change
 
 ## Key Implementation Details
 
 ### Authentication Flow
 1. User signs up → Backend creates user with auto-confirmed email
 2. User logs in → Backend returns access token
-3. Token stored in localStorage for persistence
-4. Token sent with all API requests for authorization
+3. Token stored in localStorage for session persistence
+4. Token sent with all API requests in Authorization header
 
 ### Task Hierarchy
-- Maximum 3 levels: Task → Subtask → Sub-subtask
-- Each subtask inherits parent color with lighter shades
-- Recursive rendering and state management
-- Drag-and-drop supports moving tasks within hierarchy
+- Maximum depth: 3 levels (Task → Subtask → Sub-subtask)
+- Each subtask inherits parent color with lighter shades (progressive opacity overlay)
+- Recursive rendering for nested display
+- All tasks at all levels support drag-and-drop
+
+### Drag and Drop System
+- **Top-level tasks**: Can be dragged anywhere on the canvas
+- **Subtasks**: Can be dragged onto other tasks to nest them, or onto canvas to make top-level
+- **Trash zone**: Drag any task over the trash icon to delete
+- **Visual feedback**: Custom drag layer for top-level tasks, opacity change for subtasks
 
 ### Auto-Save System
 - All changes trigger a debounced save (1 second delay)
 - Prevents excessive API calls during rapid edits
 - Console logs confirm successful saves
-- Error handling with user feedback
+- Graceful error handling with user feedback
 
 ### Search Algorithm
+Scoring system for finding best match:
 - Exact match: 100 points
 - Starts with query: 80 points
 - Contains query: 60 points
-- Word matching: Proportional scoring
-- Searches recursively through all subtasks
+- Word matching: Proportional scoring (0-40 points)
+- Searches recursively through all subtasks and all levels
+
+### Double-Click Detection
+- Custom implementation tracks click timestamps
+- 300ms window for double-click detection
+- Toggles collapse/expand state for task subtasks
 
 ## Browser Compatibility
 - Chrome (recommended)
@@ -236,19 +240,26 @@ interface Task {
 - Ensure you have a stable internet connection
 - Try logging out and back in
 
+### Drag and drop not working
+- Make sure you're clicking and holding on the task card
+- For top-level tasks, you can drop anywhere on the canvas
+- For nesting, drop directly onto another task card
+- Drop on the trash icon at the bottom to delete
+
 ## Development Notes
 
 ### Testing the Application
 When grading, please test:
 1. Creating multiple users and verifying data isolation
-2. Creating multiple lists and switching between them
-3. Creating tasks with subtasks (up to 3 levels)
-4. Editing task titles
-5. Moving tasks between lists using the arrow button
-6. Collapsing/expanding tasks by double-clicking
-7. Searching for tasks
-8. Dragging tasks on the canvas
+2. Creating tasks with different colors
+3. Creating nested subtasks (up to 3 levels deep)
+4. Editing task titles at all levels
+5. Dragging tasks on the canvas (top-level)
+6. Dragging subtasks to nest them or make them top-level
+7. Collapsing/expanding tasks by double-clicking
+8. Searching for tasks
 9. Deleting tasks with the trash zone
+10. Checking tasks as complete
 
 ### Code Comments
 The code includes extensive comments explaining:
@@ -257,18 +268,20 @@ The code includes extensive comments explaining:
 - Authentication flow
 - API integration
 - Debouncing logic
+- Drag and drop mechanics
 
 ## Future Enhancements (Not Implemented)
 - Infinite nesting depth (currently limited to 3 levels)
-- Arbitrary task movement between any subtask levels
-- Unit tests
+- Undo/redo functionality
 - Due dates and reminders
 - Task priorities
 - Collaborative lists
-- Mobile responsive design improvements
+- Mobile responsive design
+- Export/import functionality
+- Keyboard shortcuts
 
 ## Author
-Created for CS/IS 340 Web Development assignment
+Created for web development coursework
 
 ## License
 Educational use only

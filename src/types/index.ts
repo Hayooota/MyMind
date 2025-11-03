@@ -20,9 +20,3 @@ export interface Task {
   subtasks: Task[];
   parentId?: string;
 }
-
-export interface TodoList {
-  id: string;
-  name: string;
-  tasks: Task[];
-}

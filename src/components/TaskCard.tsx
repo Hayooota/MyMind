@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Plus, Edit2, ArrowRight } from "lucide-react";
+import { Check, Plus, Edit2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
@@ -14,7 +14,6 @@ interface TaskCardProps {
   onToggleCollapse: (id: string) => void;
   onMoveTask: (taskId: string, newParentId: string | null, newPosition: { x: number; y: number } | null) => void;
   onEditTask?: (id: string, newTitle: string) => void;
-  onMoveToList?: (taskId: string) => void;
   isTopLevel?: boolean;
 }
 
@@ -26,7 +25,6 @@ export function TaskCard({
   onToggleCollapse,
   onMoveTask,
   onEditTask,
-  onMoveToList,
   isTopLevel = false,
 }: TaskCardProps) {
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
@@ -39,7 +37,7 @@ export function TaskCard({
   const canAddSubtask = level < maxLevel;
   const colors = notionColors[task.color];
 
-  // Drag functionality
+  // Drag functionality - now enabled for all tasks, not just top level
   const [{ isDragging }, drag, preview] = useDrag(() => ({
     type: "TASK",
     item: { id: task.id, task, isTopLevel, parentId: task.parentId },
@@ -48,7 +46,7 @@ export function TaskCard({
     }),
   }));
 
-  // Use empty image as drag preview to use custom drag layer
+  // Use empty image as drag preview to use custom drag layer (only for top-level)
   React.useEffect(() => {
     if (isTopLevel) {
       preview(getEmptyImage(), { captureDraggingState: true });
@@ -104,14 +102,10 @@ export function TaskCard({
 
   return (
     <div
-      ref={(node) => {
-        if (isTopLevel) {
-          drag(node);
-        }
-      }}
+      ref={drag}
       style={{
         opacity: isDragging ? 0.3 : 1,
-        cursor: isTopLevel ? "grab" : "default",
+        cursor: "grab",
         transition: "opacity 0.1s ease",
       }}
       onClick={handleDoubleClick}
@@ -179,19 +173,6 @@ export function TaskCard({
                   title="Edit task"
                 >
                   <Edit2 className="w-3 h-3" />
-                </button>
-              )}
-              
-              {isTopLevel && onMoveToList && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMoveToList(task.id);
-                  }}
-                  className="opacity-40 hover:opacity-60 transition-opacity"
-                  title="Move to another list"
-                >
-                  <ArrowRight className="w-3 h-3" />
                 </button>
               )}
 

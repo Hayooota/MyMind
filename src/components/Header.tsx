@@ -61,15 +61,15 @@ export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onC
 
         <div className="flex-1 flex flex-col items-center justify-center">
           {!isAdding && !isSearching ? (
-            <h1 className="text-[#5A5550] opacity-60">My Mind</h1>
+            <h1 className="text-[#5A5550] opacity-60">{userName ? `${userName}'s Mind` : "My Mind"}</h1>
           ) : isAdding ? (
             <form onSubmit={handleSubmit} className="w-full max-w-md">
               <input
                 type="text"
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
-                placeholder="..."
-                className="w-full bg-transparent border-none outline-none text-center text-[#5A5550] placeholder:text-[#5A5550] placeholder:opacity-40"
+                placeholder=""
+                className="w-full bg-transparent border-none outline-none text-center text-[#5A5550]"
                 autoFocus
               />
             </form>
@@ -79,8 +79,8 @@ export function Header({ isAdding, isSearching, onToggleAdd, onToggleSearch, onC
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search tasks..."
-                className="w-full bg-transparent border-none outline-none text-center text-[#5A5550] placeholder:text-[#5A5550] placeholder:opacity-40"
+                placeholder=""
+                className="w-full bg-transparent border-none outline-none text-center text-[#5A5550]"
                 autoFocus
               />
             </form>

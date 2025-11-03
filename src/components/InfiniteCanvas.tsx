@@ -10,7 +10,6 @@ interface InfiniteCanvasProps {
   onToggleCollapse: (id: string) => void;
   onMoveTask: (taskId: string, newParentId: string | null, newPosition: { x: number; y: number } | null) => void;
   onEditTask?: (id: string, newTitle: string) => void;
-  onMoveToList?: (taskId: string) => void;
 }
 
 export interface InfiniteCanvasRef {
@@ -24,7 +23,6 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
   onToggleCollapse,
   onMoveTask,
   onEditTask,
-  onMoveToList,
 }, ref) => {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -108,6 +106,7 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
         drop(node);
       }}
       className="fixed inset-0 top-[10vh] bg-[#FAFAF9] overflow-hidden cursor-grab active:cursor-grabbing canvas-bg"
+      style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -140,7 +139,6 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
               onToggleCollapse={onToggleCollapse}
               onMoveTask={onMoveTask}
               onEditTask={onEditTask}
-              onMoveToList={onMoveToList}
               isTopLevel={true}
             />
           </div>

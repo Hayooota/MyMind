@@ -1,5 +1,5 @@
 import { projectId, publicAnonKey } from './supabase/info';
-import { TodoList } from '../types';
+import { Task } from '../types';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-44897ff9`;
 
@@ -42,8 +42,8 @@ export const api = {
     return data;
   },
 
-  async getLists(accessToken: string): Promise<TodoList[]> {
-    const response = await fetch(`${API_BASE}/lists`, {
+  async getTasks(accessToken: string): Promise<Task[]> {
+    const response = await fetch(`${API_BASE}/tasks`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -53,28 +53,28 @@ export const api = {
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('Error fetching lists:', data.error);
-      throw new Error(data.error || 'Failed to fetch lists');
+      console.error('Error fetching tasks:', data.error);
+      throw new Error(data.error || 'Failed to fetch tasks');
     }
 
-    return data.lists;
+    return data.tasks;
   },
 
-  async saveLists(accessToken: string, lists: TodoList[]) {
-    const response = await fetch(`${API_BASE}/lists`, {
+  async saveTasks(accessToken: string, tasks: Task[]) {
+    const response = await fetch(`${API_BASE}/tasks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ lists }),
+      body: JSON.stringify({ tasks }),
     });
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('Error saving lists:', data.error);
-      throw new Error(data.error || 'Failed to save lists');
+      console.error('Error saving tasks:', data.error);
+      throw new Error(data.error || 'Failed to save tasks');
     }
 
     return data;

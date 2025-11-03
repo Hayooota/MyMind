@@ -6,9 +6,7 @@ import { InfiniteCanvas, InfiniteCanvasRef } from "./components/InfiniteCanvas";
 import { CustomDragLayer } from "./components/CustomDragLayer";
 import { TrashZone } from "./components/TrashZone";
 import { Login } from "./components/Login";
-import { ListsSidebar } from "./components/ListsSidebar";
-import { MoveTaskDialog } from "./components/MoveTaskDialog";
-import { Task, NotionColor, TodoList } from "./types";
+import { Task, NotionColor } from "./types";
 import { api } from "./utils/api";
 
 function App() {
@@ -18,11 +16,8 @@ function App() {
   const [userName, setUserName] = useState<string>("");
   const [isAdding, setIsAdding] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [lists, setLists] = useState<TodoList[]>([]);
-  const [currentListId, setCurrentListId] = useState<string>("");
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
-  const [taskToMove, setTaskToMove] = useState<{ id: string; title: string } | null>(null);
   const canvasRef = useRef<InfiniteCanvasRef>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -37,30 +32,27 @@ function App() {
       setUserId(savedUserId);
       setUserName(savedUserName);
       setIsAuthenticated(true);
-      loadLists(savedToken);
+      loadTasks(savedToken);
     } else {
       setIsLoading(false);
     }
   }, []);
 
-  // Load lists from server
-  const loadLists = async (token: string) => {
+  // Load tasks from server
+  const loadTasks = async (token: string) => {
     try {
       setIsLoading(true);
-      const fetchedLists = await api.getLists(token);
-      setLists(fetchedLists);
-      if (fetchedLists.length > 0) {
-        setCurrentListId(fetchedLists[0].id);
-      }
+      const fetchedTasks = await api.getTasks(token);
+      setTasks(fetchedTasks);
     } catch (error) {
-      console.error('Failed to load lists:', error);
+      console.error('Failed to load tasks:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Save lists to server (debounced)
-  const saveLists = (listsToSave: TodoList[]) => {
+  // Save tasks to server (debounced)
+  const saveTasks = (tasksToSave: Task[]) => {
     if (!accessToken) return;
 
     // Clear existing timeout
@@ -71,20 +63,20 @@ function App() {
     // Set new timeout to save after 1 second of no changes
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await api.saveLists(accessToken, listsToSave);
-        console.log('Lists saved successfully');
+        await api.saveTasks(accessToken, tasksToSave);
+        console.log('Tasks saved successfully');
       } catch (error) {
-        console.error('Failed to save lists:', error);
+        console.error('Failed to save tasks:', error);
       }
     }, 1000);
   };
 
-  // Save lists whenever they change
+  // Save tasks whenever they change
   useEffect(() => {
-    if (isAuthenticated && lists.length > 0) {
-      saveLists(lists);
+    if (isAuthenticated && tasks.length >= 0) {
+      saveTasks(tasks);
     }
-  }, [lists, isAuthenticated]);
+  }, [tasks, isAuthenticated]);
 
   const handleLogin = (token: string, uid: string, name: string) => {
     setAccessToken(token);
@@ -97,8 +89,8 @@ function App() {
     localStorage.setItem('userId', uid);
     localStorage.setItem('userName', name);
     
-    // Load user's lists
-    loadLists(token);
+    // Load user's tasks
+    loadTasks(token);
   };
 
   const handleLogout = () => {
@@ -106,8 +98,7 @@ function App() {
     setAccessToken("");
     setUserId("");
     setUserName("");
-    setLists([]);
-    setCurrentListId("");
+    setTasks([]);
     
     // Clear localStorage
     localStorage.removeItem('accessToken');
@@ -117,35 +108,19 @@ function App() {
 
   const generateId = () => Math.random().toString(36).substring(2, 9);
 
-  const getCurrentList = () => lists.find(l => l.id === currentListId);
-
-  const updateCurrentList = (updater: (list: TodoList) => TodoList) => {
-    setLists(prevLists =>
-      prevLists.map(list =>
-        list.id === currentListId ? updater(list) : list
-      )
-    );
-  };
-
   const handleCreateTask = (title: string, color: NotionColor) => {
-    const currentList = getCurrentList();
-    if (!currentList) return;
-
     const newTask: Task = {
       id: generateId(),
       title,
       color,
       x: window.innerWidth / 2 - 160,
-      y: currentList.tasks.length * 120 + 50,
+      y: tasks.length * 120 + 50,
       completed: false,
       collapsed: false,
       subtasks: [],
     };
 
-    updateCurrentList(list => ({
-      ...list,
-      tasks: [...list.tasks, newTask]
-    }));
+    setTasks([...tasks, newTask]);
     setIsAdding(false);
   };
 
@@ -181,10 +156,7 @@ function App() {
   };
 
   const handleSearch = (query: string) => {
-    const currentList = getCurrentList();
-    if (!currentList) return;
-
-    const taskId = findBestMatch(currentList.tasks, query);
+    const taskId = findBestMatch(tasks, query);
     if (taskId && canvasRef.current) {
       canvasRef.current.centerOnTask(taskId);
     }
@@ -221,33 +193,30 @@ function App() {
   };
 
   const handleToggleComplete = (id: string) => {
-    updateCurrentList(list => ({
-      ...list,
-      tasks: findAndUpdateTask(list.tasks, id, (task) => ({
+    setTasks((prevTasks) =>
+      findAndUpdateTask(prevTasks, id, (task) => ({
         ...task,
         completed: !task.completed,
       }))
-    }));
+    );
   };
 
   const handleToggleCollapse = (id: string) => {
-    updateCurrentList(list => ({
-      ...list,
-      tasks: findAndUpdateTask(list.tasks, id, (task) => ({
+    setTasks((prevTasks) =>
+      findAndUpdateTask(prevTasks, id, (task) => ({
         ...task,
         collapsed: !task.collapsed,
       }))
-    }));
+    );
   };
 
   const handleEditTask = (id: string, newTitle: string) => {
-    updateCurrentList(list => ({
-      ...list,
-      tasks: findAndUpdateTask(list.tasks, id, (task) => ({
+    setTasks((prevTasks) =>
+      findAndUpdateTask(prevTasks, id, (task) => ({
         ...task,
         title: newTitle,
       }))
-    }));
+    );
   };
 
   const handleAddSubtask = (parentId: string, title: string, color: NotionColor) => {
@@ -263,13 +232,12 @@ function App() {
       parentId,
     };
 
-    updateCurrentList(list => ({
-      ...list,
-      tasks: findAndUpdateTask(list.tasks, parentId, (task) => ({
+    setTasks((prevTasks) =>
+      findAndUpdateTask(prevTasks, parentId, (task) => ({
         ...task,
         subtasks: [...task.subtasks, newSubtask],
       }))
-    }));
+    );
   };
 
   const removeTaskFromTree = (tasks: Task[], taskId: string): { tasks: Task[]; removed: Task | null } => {
@@ -306,120 +274,34 @@ function App() {
     newParentId: string | null,
     newPosition: { x: number; y: number } | null
   ) => {
-    updateCurrentList(list => {
-      const { tasks: afterRemoval, removed } = removeTaskFromTree(list.tasks, taskId);
+    setTasks((prevTasks) => {
+      const { tasks: afterRemoval, removed } = removeTaskFromTree(prevTasks, taskId);
 
-      if (!removed) return list;
+      if (!removed) return prevTasks;
 
+      // Moving to a parent (making it a subtask)
       if (newParentId) {
         const movedTask = { ...removed, parentId: newParentId, x: 0, y: 0 };
-        return {
-          ...list,
-          tasks: findAndUpdateTask(afterRemoval, newParentId, (parent) => ({
-            ...parent,
-            subtasks: [...parent.subtasks, movedTask],
-          }))
-        };
-      } else if (newPosition) {
+        return findAndUpdateTask(afterRemoval, newParentId, (parent) => ({
+          ...parent,
+          subtasks: [...parent.subtasks, movedTask],
+        }));
+      } 
+      // Moving to canvas (making it top-level)
+      else if (newPosition) {
         const movedTask = { ...removed, x: newPosition.x, y: newPosition.y, parentId: undefined };
-        return {
-          ...list,
-          tasks: [...afterRemoval, movedTask]
-        };
+        return [...afterRemoval, movedTask];
       }
 
-      return list;
+      return prevTasks;
     });
   };
 
   const handleDeleteTask = (taskId: string) => {
-    updateCurrentList(list => {
-      const { tasks: afterRemoval } = removeTaskFromTree(list.tasks, taskId);
-      return {
-        ...list,
-        tasks: afterRemoval
-      };
+    setTasks((prevTasks) => {
+      const { tasks: afterRemoval } = removeTaskFromTree(prevTasks, taskId);
+      return afterRemoval;
     });
-  };
-
-  // List management functions
-  const handleCreateList = (name: string) => {
-    const newList: TodoList = {
-      id: generateId(),
-      name,
-      tasks: [],
-    };
-    setLists([...lists, newList]);
-    setCurrentListId(newList.id);
-  };
-
-  const handleDeleteList = (listId: string) => {
-    const updatedLists = lists.filter(l => l.id !== listId);
-    setLists(updatedLists);
-    if (currentListId === listId && updatedLists.length > 0) {
-      setCurrentListId(updatedLists[0].id);
-    }
-  };
-
-  const handleRenameList = (listId: string, newName: string) => {
-    setLists(prevLists =>
-      prevLists.map(list =>
-        list.id === listId ? { ...list, name: newName } : list
-      )
-    );
-  };
-
-  const handleMoveToList = (taskId: string) => {
-    const currentList = getCurrentList();
-    if (!currentList) return;
-
-    const findTask = (tasks: Task[]): Task | null => {
-      for (const task of tasks) {
-        if (task.id === taskId) return task;
-        const found = findTask(task.subtasks);
-        if (found) return found;
-      }
-      return null;
-    };
-
-    const task = findTask(currentList.tasks);
-    if (task) {
-      setTaskToMove({ id: taskId, title: task.title });
-      setMoveDialogOpen(true);
-    }
-  };
-
-  const handleConfirmMoveToList = (targetListId: string) => {
-    if (!taskToMove) return;
-
-    const currentList = getCurrentList();
-    if (!currentList || targetListId === currentListId) return;
-
-    // Remove task from current list
-    const { tasks: afterRemoval, removed } = removeTaskFromTree(currentList.tasks, taskToMove.id);
-    
-    if (!removed) return;
-
-    // Update current list
-    setLists(prevLists =>
-      prevLists.map(list => {
-        if (list.id === currentListId) {
-          return { ...list, tasks: afterRemoval };
-        } else if (list.id === targetListId) {
-          // Add task to target list with new position
-          const movedTask = {
-            ...removed,
-            x: window.innerWidth / 2 - 160,
-            y: list.tasks.length * 120 + 50,
-            parentId: undefined,
-          };
-          return { ...list, tasks: [...list.tasks, movedTask] };
-        }
-        return list;
-      })
-    );
-
-    setTaskToMove(null);
   };
 
   // Show login if not authenticated
@@ -436,9 +318,6 @@ function App() {
     );
   }
 
-  const currentList = getCurrentList();
-  const otherLists = lists.filter(l => l.id !== currentListId);
-
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="w-screen h-screen overflow-hidden">
@@ -452,45 +331,19 @@ function App() {
           userName={userName}
           onLogout={handleLogout}
         />
-        
-        <ListsSidebar
-          lists={lists}
-          currentListId={currentListId}
-          onSelectList={setCurrentListId}
-          onCreateList={handleCreateList}
-          onDeleteList={handleDeleteList}
-          onRenameList={handleRenameList}
-        />
 
-        <div className="ml-[300px]">
-          <InfiniteCanvas
-            ref={canvasRef}
-            tasks={currentList?.tasks || []}
-            onToggleComplete={handleToggleComplete}
-            onAddSubtask={handleAddSubtask}
-            onToggleCollapse={handleToggleCollapse}
-            onMoveTask={handleMoveTask}
-            onEditTask={handleEditTask}
-            onMoveToList={handleMoveToList}
-          />
-        </div>
+        <InfiniteCanvas
+          ref={canvasRef}
+          tasks={tasks}
+          onToggleComplete={handleToggleComplete}
+          onAddSubtask={handleAddSubtask}
+          onToggleCollapse={handleToggleCollapse}
+          onMoveTask={handleMoveTask}
+          onEditTask={handleEditTask}
+        />
 
         <CustomDragLayer />
         <TrashZone onDeleteTask={handleDeleteTask} />
-
-        {taskToMove && (
-          <MoveTaskDialog
-            isOpen={moveDialogOpen}
-            taskTitle={taskToMove.title}
-            currentListName={currentList?.name || ""}
-            lists={otherLists}
-            onMove={handleConfirmMoveToList}
-            onClose={() => {
-              setMoveDialogOpen(false);
-              setTaskToMove(null);
-            }}
-          />
-        )}
       </div>
     </DndProvider>
   );

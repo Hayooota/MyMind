@@ -133,8 +133,8 @@ app.post("/make-server-44897ff9/login", async (c) => {
   }
 });
 
-// Get lists for authenticated user
-app.get("/make-server-44897ff9/lists", async (c) => {
+// Get tasks for authenticated user
+app.get("/make-server-44897ff9/tasks", async (c) => {
   const authHeader = c.req.header('Authorization');
   const { error, userId } = await verifyUser(authHeader);
 
@@ -143,29 +143,18 @@ app.get("/make-server-44897ff9/lists", async (c) => {
   }
 
   try {
-    const listsKey = `user_${userId}_lists`;
-    const lists = await kv.get(listsKey);
+    const tasksKey = `user_${userId}_tasks`;
+    const tasks = await kv.get(tasksKey);
     
-    // If no lists exist, create a default one
-    if (!lists || lists.length === 0) {
-      const defaultList = [{
-        id: 'default-' + Date.now(),
-        name: 'My Tasks',
-        tasks: []
-      }];
-      await kv.set(listsKey, defaultList);
-      return c.json({ lists: defaultList });
-    }
-    
-    return c.json({ lists: lists || [] });
+    return c.json({ tasks: tasks || [] });
   } catch (err: any) {
-    console.error('Error fetching lists for user:', err);
-    return c.json({ error: err.message || "Failed to fetch lists" }, 500);
+    console.error('Error fetching tasks for user:', err);
+    return c.json({ error: err.message || "Failed to fetch tasks" }, 500);
   }
 });
 
-// Save lists for authenticated user
-app.post("/make-server-44897ff9/lists", async (c) => {
+// Save tasks for authenticated user
+app.post("/make-server-44897ff9/tasks", async (c) => {
   const authHeader = c.req.header('Authorization');
   const { error, userId } = await verifyUser(authHeader);
 
@@ -174,19 +163,19 @@ app.post("/make-server-44897ff9/lists", async (c) => {
   }
 
   try {
-    const { lists } = await c.req.json();
+    const { tasks } = await c.req.json();
 
-    if (!Array.isArray(lists)) {
-      return c.json({ error: "Lists must be an array" }, 400);
+    if (!Array.isArray(tasks)) {
+      return c.json({ error: "Tasks must be an array" }, 400);
     }
 
-    const listsKey = `user_${userId}_lists`;
-    await kv.set(listsKey, lists);
+    const tasksKey = `user_${userId}_tasks`;
+    await kv.set(tasksKey, tasks);
     
-    return c.json({ success: true, message: "Lists saved successfully" });
+    return c.json({ success: true, message: "Tasks saved successfully" });
   } catch (err: any) {
-    console.error('Error saving lists for user:', err);
-    return c.json({ error: err.message || "Failed to save lists" }, 500);
+    console.error('Error saving tasks for user:', err);
+    return c.json({ error: err.message || "Failed to save tasks" }, 500);
   }
 });
 
