@@ -44,10 +44,10 @@ interface ColorClasses {
  * 
  * Maps each NotionColor to its corresponding Tailwind CSS classes.
  * 
- * Color Philosophy:
- * - Light backgrounds (100-200 range): Easy on eyes, good contrast with text
- * - Medium borders (400-500 range): Visible but not overpowering
- * - Dark text (800-900 range): High contrast, readable
+ * Color Philosophy (Classic Notion Colors - Restored):
+ * - Ultra-light backgrounds (50 range): Soft pastels, barely-there tints
+ * - Very subtle borders (200 range): Gentle definition, elegant
+ * - Medium text (600 range): Perfect balance of readability and softness
  * 
  * Progressive Lightening:
  * - Subtasks get a white overlay (level * 0.35 opacity)
@@ -66,67 +66,67 @@ interface ColorClasses {
  */
 export const notionColors: Record<NotionColor, ColorClasses> = {
   /**
-   * GRAY
+   * GRAY - Classic Notion Gray
    * Purpose: Neutral, low-priority, archived tasks
    * Psychology: Calm, professional, minimal
    * Best for: Reference material, completed projects, templates
    */
   gray: {
-    bg: "bg-gray-100",       // Very light gray
-    border: "border-gray-400", // Medium gray
-    text: "text-gray-900",    // Almost black
+    bg: "bg-gray-50",           // Ultra soft gray background
+    border: "border-gray-200",   // Very subtle gray border
+    text: "text-gray-600",       // Medium gray text
   },
 
   /**
-   * BROWN
+   * BROWN - Classic Notion Brown
    * Purpose: Routine tasks, earth-related, stable projects
    * Psychology: Warm, reliable, grounded
    * Best for: Daily habits, home tasks, maintenance
    */
   brown: {
-    bg: "bg-orange-100",     // Light tan (using orange palette)
-    border: "border-orange-400", // Tan/brown
-    text: "text-orange-900",  // Dark brown
+    bg: "bg-orange-50",         // Soft peachy-tan background
+    border: "border-orange-200", // Gentle tan border
+    text: "text-orange-700",     // Warm brown text
   },
 
   /**
-   * ORANGE
+   * ORANGE - Classic Notion Orange
    * Purpose: Creative tasks, brainstorming, energetic projects
    * Psychology: Energetic, creative, enthusiastic
    * Best for: Creative work, ideation, marketing tasks
    */
   orange: {
-    bg: "bg-orange-100",     // Light peach
-    border: "border-orange-500", // Bright orange
-    text: "text-orange-900",  // Deep orange-brown
+    bg: "bg-orange-50",         // Soft peach background
+    border: "border-orange-300", // Gentle orange border
+    text: "text-orange-600",     // Warm orange text
   },
 
   /**
-   * YELLOW
+   * YELLOW - Classic Notion Yellow
    * Purpose: Important, attention-grabbing, high-visibility
    * Psychology: Optimistic, attention-grabbing, cheerful
    * Best for: Deadlines, reminders, highlights
    */
   yellow: {
-    bg: "bg-yellow-100",     // Light yellow
-    border: "border-yellow-500", // Bright yellow
-    text: "text-yellow-900",  // Dark yellow-brown
+    bg: "bg-yellow-50",         // Soft butter background
+    border: "border-yellow-200", // Gentle yellow border
+    text: "text-yellow-700",     // Warm yellow-brown text
   },
 
   /**
-   * GREEN
+   * GREEN - Classic Notion Green
    * Purpose: Growth, success, health-related, completed goals
    * Psychology: Calm, natural, successful
    * Best for: Health goals, financial tasks, growth projects
    */
   green: {
-    bg: "bg-green-100",      // Light mint
-    border: "border-green-500", // Vibrant green
-    text: "text-green-900",   // Deep green
+    bg: "bg-emerald-50",        // Soft mint background
+    border: "border-emerald-200", // Gentle green border
+    text: "text-emerald-600",    // Fresh green text
   },
 
   /**
-   * BLUE (DEFAULT)
+   * BLUE (DEFAULT) - Classic Notion Blue
    * Purpose: Professional, organizational, general tasks
    * Psychology: Trustworthy, professional, calm
    * Best for: Work tasks, projects, default choice
@@ -138,45 +138,45 @@ export const notionColors: Record<NotionColor, ColorClasses> = {
    * - Works well for any task type
    */
   blue: {
-    bg: "bg-blue-100",       // Light sky blue
-    border: "border-blue-500", // Bright blue
-    text: "text-blue-900",    // Deep blue
+    bg: "bg-sky-50",            // Soft sky blue background
+    border: "border-sky-200",    // Gentle blue border
+    text: "text-sky-600",        // Clear blue text
   },
 
   /**
-   * PURPLE
+   * PURPLE - Classic Notion Purple
    * Purpose: Creative, strategic, long-term planning
    * Psychology: Creative, luxurious, strategic
    * Best for: Strategy, vision, big-picture thinking
    */
   purple: {
-    bg: "bg-purple-100",     // Light lavender
-    border: "border-purple-500", // Vibrant purple
-    text: "text-purple-900",  // Deep purple
+    bg: "bg-purple-50",         // Soft lavender background
+    border: "border-purple-200", // Gentle purple border
+    text: "text-purple-600",     // Rich purple text
   },
 
   /**
-   * PINK
+   * PINK - Classic Notion Pink
    * Purpose: Personal, relationship-related, fun projects
    * Psychology: Friendly, fun, personal
    * Best for: Personal tasks, relationships, hobbies
    */
   pink: {
-    bg: "bg-pink-100",       // Light rose
-    border: "border-pink-500", // Bright pink
-    text: "text-pink-900",    // Deep pink
+    bg: "bg-pink-50",           // Soft rose background
+    border: "border-pink-200",   // Gentle pink border
+    text: "text-pink-600",       // Warm pink text
   },
 
   /**
-   * RED
+   * RED - Classic Notion Red
    * Purpose: Urgent, critical, high-priority
    * Psychology: Urgent, important, dangerous
    * Best for: Deadlines, critical tasks, emergencies
    */
   red: {
-    bg: "bg-red-100",        // Light pink-red
-    border: "border-red-500", // Bright red
-    text: "text-red-900",     // Deep red
+    bg: "bg-red-50",            // Soft coral background
+    border: "border-red-200",    // Gentle red border
+    text: "text-red-600",        // Clear red text
   },
 };
 
@@ -276,9 +276,9 @@ export const notionColors: Record<NotionColor, ColorClasses> = {
  * - Better IDE autocomplete
  * - Easier to use with responsive/hover variants
  * 
- * Why these specific shade numbers (100, 500, 900)?
- * - 100: Light enough for backgrounds without eye strain
- * - 500: Vibrant enough for borders to be visible
- * - 900: Dark enough for text to be readable
- * - These are Tailwind's semantic sweet spots
+ * Why these specific shade numbers (50, 200, 600)?
+ * - 50: Ultra-light pastel backgrounds (classic Notion aesthetic)
+ * - 200: Very subtle borders (barely visible, elegant)
+ * - 600: Medium text (readable without being harsh)
+ * - These exact shades match the beautiful Notion color system
  */
